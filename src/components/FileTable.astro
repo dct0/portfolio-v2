@@ -4,25 +4,18 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
 import type { CollectionEntry } from "astro:content";
-import { render } from "astro:content";
 
 type Props = {
-  items: CollectionEntry<"page">[];
+  items: (CollectionEntry<"pages"> & {
+    lastModified: string;
+  })[];
 };
 
 const { items }: Props = Astro.props;
-
-const promises = items.map(async (entry) => {
-  const { remarkPluginFrontmatter } = await render(entry);
-  return dayjs(remarkPluginFrontmatter.lastModified)
-    .utc()
-    .format("HH:mm:ss DD MMMM YYYY UTC");
-});
-const lastModifieds = await Promise.all(promises);
 ---
 
 <table>
-  <thead data-font="sometype_mono">
+  <thead>
     <tr>
       <th class="icon"></th>
       <th class="ttl">Name</th>
@@ -44,7 +37,7 @@ const lastModifieds = await Promise.all(promises);
   </tbody>
   <tbody>
     {
-      items.map((item, i) => {
+      items.map((item) => {
         return (
           <tr>
             <td class="icon" data-type="eye" />
@@ -52,7 +45,7 @@ const lastModifieds = await Promise.all(promises);
               <a href={`/${item.id}`}>{item.data.title}</a>
             </td>
             <td class="update">
-              <time datetime={lastModifieds[i]}>{lastModifieds[i]}</time>
+              <time datetime={item.lastModified}>{item.lastModified}</time>
             </td>
             <td class="size">{item.data.size}</td>
             <td class="desc">{item.data.description}</td>

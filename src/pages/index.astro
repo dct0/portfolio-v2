@@ -1,10 +1,24 @@
 ---
-import Header from "../components/Header.astro";
+import { getCollection, render } from "astro:content";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import FileTable from "../components/FileTable.astro";
+import Header from "../components/Header.astro";
 import Layout from "../layouts/Layout.astro";
-import { getCollection } from "astro:content";
 
-const pages = await getCollection("page");
+dayjs.extend(utc);
+
+const entries = await getCollection("pages");
+
+const promises = entries.map(async (page) => {
+  const { remarkPluginFrontmatter } = await render(page);
+  const lastModified = dayjs(remarkPluginFrontmatter.lastModified)
+    .utc()
+    .format("HH:mm:ss DD MMMM YYYY UTC");
+  return { ...page, lastModified };
+});
+
+const pages = await Promise.all(promises);
 ---
 
 <Layout>

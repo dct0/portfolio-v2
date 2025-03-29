@@ -15,7 +15,7 @@ const blog = defineCollection({
   }),
 });
 
-const page = defineCollection({
+const pages = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/data/main" }),
   schema: z.object({
     title: z.string(),
@@ -24,4 +24,4 @@ const page = defineCollection({
   }),
 });
 // 4. Export a single `collections` object to register your collection(s)
-export const collections = { blog, page };
+export const collections = { blog, pages };
