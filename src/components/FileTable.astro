@@ -1,0 +1,122 @@
+---
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+
+type Props = {
+  items: CollectionEntry<"page">[];
+};
+
+const { items }: Props = Astro.props;
+
+const promises = items.map(async (entry) => {
+  const { remarkPluginFrontmatter } = await render(entry);
+  return dayjs(remarkPluginFrontmatter.lastModified)
+    .utc()
+    .format("HH:mm:ss DD MMMM YYYY UTC");
+});
+const lastModifieds = await Promise.all(promises);
+---
+
+<table>
+  <thead data-font="sometype_mono">
+    <tr>
+      <th class="icon"></th>
+      <th class="ttl">Name</th>
+      <th class="update">Last Modified</th>
+      <th class="size">Size</th>
+      <th class="Description">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="icon" data-type="back"></td>
+      <td class="ttl"><a href="../">Parent Directory</a></td>
+      <td class="update">
+        <time datetime="2025-03-28">2025-03-28</time>
+      </td>
+      <td class="size">-</td>
+      <td class="desc">-</td>
+    </tr>
+  </tbody>
+  <tbody>
+    {
+      items.map((item, i) => {
+        return (
+          <tr>
+            <td class="icon" data-type="eye" />
+            <td class="ttl">
+              <a href={`/${item.id}`}>{item.data.title}</a>
+            </td>
+            <td class="update">
+              <time datetime={lastModifieds[i]}>{lastModifieds[i]}</time>
+            </td>
+            <td class="size">{item.data.size}</td>
+            <td class="desc">{item.data.description}</td>
+          </tr>
+        );
+      })
+    }
+  </tbody>
+</table>
+<style>
+  table {
+    font-family: "Sometype Mono Variable", monospace;
+    box-sizing: border-box;
+    width: 100%;
+    text-align: left;
+    font-size: 0.8rem;
+  }
+
+  th {
+    padding-bottom: 0.5rem;
+  }
+
+  td {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  th,
+  td {
+    padding-left: 0.75rem;
+  }
+
+  thead {
+    position: sticky;
+  }
+
+  thead:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    /* background: #626262; */
+    border-bottom: 1px solid #dbdbdb;
+    height: 1px;
+  }
+
+  .icon {
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    width: 24px;
+  }
+
+  .icon[data-type="folder"] {
+    background-image: url(../assets/icon_folder.svg);
+  }
+
+  .icon[data-type="eye"] {
+    background-image: url(../assets/icon_eye.svg);
+  }
+
+  .icon[data-type="back"] {
+    background-image: url(../assets/icon_back.svg);
+  }
+</style>
