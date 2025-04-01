@@ -13,5 +13,8 @@
     "@fontsource-variable/sometype-mono": "^5.2.5",
     "astro": "^5.5.5",
     "dayjs": "^1.11.13"
+  },
+  "volta": {
+    "node": "22.14.0"
   }
 }

@@ -11,4 +11,5 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkModifiedTime],
   },
+  trailingSlash: "never",
 });

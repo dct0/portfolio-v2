@@ -12,6 +12,9 @@ type Props = {
 };
 
 const { items }: Props = Astro.props;
+const lastSlash = Astro.url.pathname.lastIndexOf("/");
+let parent = Astro.url.pathname.substring(0, lastSlash);
+parent = parent.length > 0 ? parent : "/";
 ---
 
 <table>
@@ -24,18 +27,14 @@ const { items }: Props = Astro.props;
       <th class="Description">Description</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody class="nav">
     <tr>
       <td class="icon" data-type="back"></td>
-      <td class="ttl"><a href="../">Parent Directory</a></td>
-      <td class="update">
-        <time datetime="2025-03-28">2025-03-28</time>
-      </td>
+      <td class="ttl"><a href={parent}>Parent Directory</a></td>
+      <td class="update">-</td>
       <td class="size">-</td>
       <td class="desc">-</td>
     </tr>
-  </tbody>
-  <tbody>
     {
       items.map((item) => {
         return (
@@ -45,10 +44,16 @@ const { items }: Props = Astro.props;
               <a href={`/${item.id}`}>{item.data.title}</a>
             </td>
             <td class="update">
-              <time datetime={item.lastModified}>{item.lastModified}</time>
+              <time datetime={item.lastModified}>
+                {item.lastModified ?? "-"}
+              </time>
             </td>
-            <td class="size">{item.data.size}</td>
-            <td class="desc">{item.data.description}</td>
+            <td class="size">
+              {item.data.type === "page" ? item.data.size : "-"}
+            </td>
+            <td class="desc">
+              {item.data.type === "page" ? item.data.description : "-"}
+            </td>
           </tr>
         );
       })

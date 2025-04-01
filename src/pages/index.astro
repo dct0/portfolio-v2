@@ -7,10 +7,8 @@ import Header from "../components/Header.astro";
 import Layout from "../layouts/Layout.astro";
 
 dayjs.extend(utc);
-
-const entries = await getCollection("pages");
-
-const promises = entries.map(async (page) => {
+const pages = await getCollection("pages");
+const promises = pages.map(async (page) => {
   const { remarkPluginFrontmatter } = await render(page);
   const lastModified = dayjs(remarkPluginFrontmatter.lastModified)
     .utc()
@@ -18,10 +16,12 @@ const promises = entries.map(async (page) => {
   return { ...page, lastModified };
 });
 
-const pages = await Promise.all(promises);
+const items = await Promise.all(promises);
+
+const filtered = items.filter((item) => item.id.split("/").length <= 1);
 ---
 
 <Layout>
   <Header />
-  <FileTable items={pages} />
+  <FileTable items={filtered} />
 </Layout>

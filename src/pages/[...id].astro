@@ -1,17 +1,55 @@
 ---
 import { getCollection, render } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import FileTable from "../components/FileTable.astro";
+import Header from "../components/Header.astro";
+import { Fragment } from "astro/jsx-runtime";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
 export async function getStaticPaths() {
+  dayjs.extend(utc);
   const pages = await getCollection("pages");
-  return pages.map((page) => ({
-    params: { id: page.id },
-    props: { page },
-  }));
+  const promises = pages.map(async (page) => {
+    const { remarkPluginFrontmatter } = await render(page);
+    const lastModified = dayjs(remarkPluginFrontmatter.lastModified)
+      .utc()
+      .format("HH:mm:ss DD MMMM YYYY UTC");
+    return {
+      params: { id: page.id },
+      props: { page: { ...page, lastModified }, pages },
+    };
+  });
+  return await Promise.all(promises);
 }
 
-const { page } = Astro.props;
+const { page, pages } = Astro.props;
 const { Content } = await render(page);
+
+const path = Astro.url.pathname.substring(1);
+console.log(path);
+const filtered = pages.filter((item) => {
+  return (
+    item.id.includes("/") && // handle root
+    item.id.startsWith(path) && // don't match other paths that have the same depth
+    item.id.replace(path, "") && // no exact match (same as path)
+    item.id.replace(path, "").split("/").length <= 2 // no deeper
+  );
+});
 ---
 
-<h1>{page.data.title}</h1>
-<Content />
+<Layout>
+  {
+    page.data.type === "folder" ? (
+      <>
+        <Header />
+        <FileTable items={filtered} />
+      </>
+    ) : (
+      <>
+        <h1>{page.data.title}</h1>
+        <Content />
+      </>
+    )
+  }
+</Layout>

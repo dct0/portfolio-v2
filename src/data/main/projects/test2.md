@@ -1,8 +1,8 @@
 ---
 type: page
-title: About
+title: Test Project 2
 size: "-"
 description: "-"
 ---
 
-About page.
+Test Project.
