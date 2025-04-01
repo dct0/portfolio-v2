@@ -1,41 +1,51 @@
 ---
-import { getCollection, render } from "astro:content";
-import Layout from "../layouts/Layout.astro";
-import FileTable from "../components/FileTable.astro";
-import Header from "../components/Header.astro";
 import { Fragment } from "astro/jsx-runtime";
+import { getCollection, render } from "astro:content";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import FileTable from "../components/FileTable.astro";
+import Header from "../components/Header.astro";
+import Layout from "../layouts/Layout.astro";
 
 export async function getStaticPaths() {
   dayjs.extend(utc);
+  const pages = await getCollection("pages");
+
+  return pages.map((page) => {
+    return {
+      params: { id: page.id },
+      props: { page },
+    };
+  });
+}
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+
+let filtered = [] as any;
+
+if (page.data.type === "folder") {
   const pages = await getCollection("pages");
   const promises = pages.map(async (page) => {
     const { remarkPluginFrontmatter } = await render(page);
     const lastModified = dayjs(remarkPluginFrontmatter.lastModified)
       .utc()
       .format("HH:mm:ss DD MMMM YYYY UTC");
-    return {
-      params: { id: page.id },
-      props: { page: { ...page, lastModified }, pages },
-    };
+    return { ...page, lastModified };
   });
-  return await Promise.all(promises);
+
+  const items = await Promise.all(promises);
+
+  const path = Astro.url.pathname.substring(1);
+  filtered = items.filter((item) => {
+    return (
+      item.id.includes("/") && // handle root
+      item.id.startsWith(path) && // don't match other paths that have the same depth
+      item.id.replace(path, "") && // no exact match (same as path)
+      item.id.replace(path, "").split("/").length <= 2 // no deeper
+    );
+  });
 }
-
-const { page, pages } = Astro.props;
-const { Content } = await render(page);
-
-const path = Astro.url.pathname.substring(1);
-console.log(path);
-const filtered = pages.filter((item) => {
-  return (
-    item.id.includes("/") && // handle root
-    item.id.startsWith(path) && // don't match other paths that have the same depth
-    item.id.replace(path, "") && // no exact match (same as path)
-    item.id.replace(path, "").split("/").length <= 2 // no deeper
-  );
-});
 ---
 
 <Layout>
