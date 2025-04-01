@@ -8,8 +8,8 @@ import { remarkModifiedTime } from "./remark-modified-time.mjs";
 export default defineConfig({
   site: "https://new.dct0.tech",
   integrations: [sitemap()],
+  trailingSlash: "never",
   markdown: {
     remarkPlugins: [remarkModifiedTime],
   },
-  trailingSlash: "never",
 });
